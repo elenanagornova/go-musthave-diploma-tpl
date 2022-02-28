@@ -1,0 +1,245 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Gophermart api
+servers:
+  - url: "https://localhost:8080"
+paths:
+  /api/user/register:
+    post:
+      tags:
+        - Регистрация и авторизация
+      summary: Регистрация пользователя
+      operationId: userRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        200:
+          description: пользователь успешно зарегистрирован и аутентифицирован
+        400:
+          description: неверный формат запроса
+        409:
+          description: логин уже занят
+        500:
+          description: внутренняя ошибка сервера
+  /api/user/login:
+    post:
+      tags:
+        - Регистрация и авторизация
+      summary: Аутентификация пользователя
+      operationId: userLogin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        200:
+          description: пользователь успешно аутентифицирован
+        400:
+          description: неверный формат запроса
+        401:
+          description: неверная пара логин/пароль
+        500:
+          description: внутренняя ошибка сервера
+
+  /api/user/orders:
+    post:
+      tags:
+        - Заказы
+      summary: Загрузка номера заказа
+      operationId: userOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserOrdersRequest'
+      responses:
+        200:
+          description: номер заказа уже был загружен этим пользователем
+        202:
+          description: новый номер заказа принят в обработку
+        400:
+          description: неверный формат запроса
+        401:
+          description: пользователь не аутентифицирован
+        409:
+          description: номер заказа уже был загружен другим пользователем
+        422:
+          description: неверный формат номера заказа
+        500:
+          description: внутренняя ошибка сервера
+    get:
+      tags:
+        - Заказы
+      summary: Получение списка заказов
+      operationId: userOrders
+      description: "get all user orders"
+      parameters: []
+      responses:
+        200:
+          description: успешная обработка запроса
+          $ref: '#/components/responses/GetUserOrdersResponse'
+        204:
+          description: нет данных для ответа
+        401:
+          description: пользователь не авторизован
+        500:
+          description: внутренняя ошибка сервера
+
+  /api/user/balance:
+    get:
+      tags:
+        - Баланс
+      summary: Получение текущего баланса пользователя
+      operationId: userBalance
+      responses:
+        200:
+          description: успешная обработка запроса
+          $ref: '#/components/responses/GetUserBalanceResponse'
+        204:
+          description: нет данных для ответа
+        401:
+          description: пользователь не авторизован
+        500:
+          description: внутренняя ошибка сервера
+  /api/user/balance/withdraw:
+    post:
+      tags:
+        - Баланс
+      summary: Запрос на списание средств
+      operationId: userBalanceWithdraw
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBalanceWithdrawRequest'
+      responses:
+        200:
+          description: успешная обработка запроса
+        401:
+          description: пользователь не авторизован
+        402:
+          description: на счету недостаточно средств
+        422:
+          description: неверный формат номера заказа
+        500:
+          description: внутренняя ошибка сервера
+  /api/user/balance/withdrawals:
+    get:
+      tags:
+        - Баланс
+      summary: Получение информации о выводе средств
+      operationId: userWithdrawals
+      responses:
+        200:
+          description: успешная обработка запроса
+          $ref: '#/components/schemas/GetUserWithdrawalsResponse'
+        204:
+          description: нет ни одного списания
+        401:
+          description: пользователь не авторизован
+        500:
+          description: внутренняя ошибка сервера
+
+
+
+
+
+
+components:
+  responses:
+    GetUserOrdersResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GetUserOrdersResponse'
+    GetUserBalanceResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GetUserBalanceResponse'
+
+  schemas:
+    UserRegisterRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required: [ login, password ]
+
+    UserLoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required: [ login, password ]
+
+    UserOrdersRequest:
+      type: string
+
+    GetUserOrdersResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Order'
+    Order:
+      type: object
+      required: [number, status, uploaded_at]
+      properties:
+        number:
+          type: string
+        status:
+          type: string
+        accrual:
+          type: number
+          multipleOf: 0.01
+        uploaded_at:
+          type: string
+
+    GetUserBalanceResponse:
+      type: object
+      properties:
+        current:
+          type: number
+          multipleOf: 0.01
+        withdrawn:
+          type: number
+          multipleOf: 0.01
+      required: [current, withdrawn]
+
+    UserBalanceWithdrawRequest:
+      type: object
+      properties:
+        order:
+          type: string
+        sum:
+          type: number
+          multipleOf: 0.01
+      required: [order, sum]
+
+    GetUserWithdrawalsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Withdrawals'
+
+    Withdrawals:
+      type: object
+      required: [ order, sum, processed_at ]
+      properties:
+        order:
+          type: string
+        sum:
+          type: number
+          multipleOf: 0.01
+        processed_at:
+          type: string

@@ -1,0 +1,54 @@
+openapi: "3.0.2"
+info:
+  version: 1.0.0
+  title: Accrual api
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /api/orders/{number}:
+    get:
+      operationId: getOrderAccrual
+      summary: получение информации о расчёте начислений баллов лояльности.
+      responses:
+        '200':
+          description: успешная обработка запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '429':
+          description: превышено количество запросов к сервису
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                description: время, через которое надо повторить запрос
+        '500':
+          description: внутренняя ошибка сервера.
+
+      parameters:
+        - in: path
+          name: number
+          required: true
+          schema:
+            $ref: '#/components/schemas/Order'
+
+components:
+  schemas:
+    Order:
+      type: string
+      minLength: 2
+      description: номер заказа
+
+    Response:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/Order'
+        status:
+          type: string
+        accrual:
+          type: number
+      required:
+        - status
+        - order
