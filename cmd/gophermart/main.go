@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"go-musthave-diploma-tpl/internal/config"
 	"go-musthave-diploma-tpl/internal/controller"
-	"go-musthave-diploma-tpl/internal/loyalty_system"
+	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/repository"
 	"log"
 	"net/http"
@@ -25,7 +25,7 @@ func main() {
 		panic(fmt.Sprintf("Can't create repository: %s", err.Error()))
 	}
 
-	service := loyalty_system.New(cfg.RunAddr, repo)
+	service := gophermart.New(cfg.RunAddr, repo)
 
 	log.Println("Starting server at port 8080")
 
@@ -39,7 +39,7 @@ func main() {
 	}
 }
 
-func NewRouter(service *loyalty_system.Loyalty) http.Handler {
+func NewRouter(service *gophermart.Loyalty) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 

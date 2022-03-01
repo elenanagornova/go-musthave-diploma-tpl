@@ -1,30 +1,30 @@
 package controller
 
 import (
-	"go-musthave-diploma-tpl/internal/loyalty_system"
+	"go-musthave-diploma-tpl/internal/gophermart"
 	"net/http"
 )
 
-func RegisterUser(service *loyalty_system.Loyalty) http.HandlerFunc {
+func RegisterUser(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-func LoginUser(service *loyalty_system.Loyalty) http.HandlerFunc {
+func LoginUser(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-func UploadUserOrder(service *loyalty_system.Loyalty) http.HandlerFunc {
+func UploadUserOrder(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-func GetUserOrders(service *loyalty_system.Loyalty) http.HandlerFunc {
+func GetUserOrders(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-func GetUserBalance(service *loyalty_system.Loyalty) http.HandlerFunc {
+func GetUserBalance(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-func WithdrawBalance(service *loyalty_system.Loyalty) http.HandlerFunc {
+func WithdrawBalance(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }

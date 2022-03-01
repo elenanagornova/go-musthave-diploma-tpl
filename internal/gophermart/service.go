@@ -1,4 +1,4 @@
-package loyalty_system
+package gophermart
 
 import "go-musthave-diploma-tpl/internal/repository"
 

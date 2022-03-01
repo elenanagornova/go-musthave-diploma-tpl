@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"go-musthave-diploma-tpl/internal/loyalty_system"
+	"go-musthave-diploma-tpl/internal/gophermart"
 	"net/http"
 )
 
-func CheckConn(service *loyalty_system.Loyalty) http.HandlerFunc {
+func CheckConn(service *gophermart.Loyalty) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := service.Repo.Ping(); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
