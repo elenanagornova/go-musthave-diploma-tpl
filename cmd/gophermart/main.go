@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"go-musthave-diploma-tpl/internal/config"
+	"go-musthave-diploma-tpl/internal/controller"
 	"go-musthave-diploma-tpl/internal/loyalty_system"
 	"go-musthave-diploma-tpl/internal/repository"
 	"log"
@@ -19,12 +20,12 @@ func main() {
 	_, cancel := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
 	defer cancel()
 
-	_, err := repository.NewRepository(cfg)
+	repo, err := repository.NewRepository(cfg)
 	if err != nil {
 		panic(fmt.Sprintf("Can't create repository: %s", err.Error()))
 	}
 
-	service := loyalty_system.New(cfg.RunAddr)
+	service := loyalty_system.New(cfg.RunAddr, repo)
 
 	log.Println("Starting server at port 8080")
 
@@ -42,5 +43,12 @@ func NewRouter(service *loyalty_system.Loyalty) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	r.Post("/api/user/register", controller.RegisterUser(service))
+	r.Post("/api/user/login", controller.LoginUser(service))
+	r.Post("/api/user/orders", controller.UploadUserOrder(service))
+	r.Get("/api/user/orders", controller.GetUserOrders(service))
+	r.Get("/api/user/balance", controller.GetUserBalance(service))
+	r.Post("/api/user/balance/withdraw", controller.WithdrawBalance(service))
+	r.Get("/ping", controller.CheckConn(service))
 	return r
 }

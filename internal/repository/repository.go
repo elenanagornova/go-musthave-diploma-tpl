@@ -15,6 +15,10 @@ type DBRepo struct {
 	conn *pgx.Conn
 }
 
+func (D DBRepo) Ping() error {
+	panic("implement me")
+}
+
 func NewDBConnect(databaseDSN string) (*DBRepo, error) {
 	conn, err := pgx.Connect(context.Background(), databaseDSN)
 	if err != nil {
