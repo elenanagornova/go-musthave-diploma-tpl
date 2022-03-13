@@ -56,3 +56,52 @@ func GetClaims(jwtToken string) (*UserClaims, error) {
 	}
 	return claims, nil
 }
+func Welcome(w http.ResponseWriter, r *http.Request) {
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get the JWT string from the cookie
+	tknStr := c.Value
+
+	// Initialize a new instance of `Claims`
+	claims := &UserClaims{}
+
+	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !tkn.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+}
+
+func CheckToken(token string) (string, error) {
+	claims := &UserClaims{}
+
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if tkn.Valid {
+		return claims.UserName, nil
+	}
+	return "", nil
+}

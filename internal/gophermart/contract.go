@@ -17,3 +17,7 @@ type UserAccountRepo interface {
 	RefillAmount(ctx context.Context, userID string, diff float32) error
 	WithdrawalAmount(ctx context.Context, userID string, diff float32) error
 }
+
+type UserOrderRepo interface {
+	AddUserOrder(ctx context.Context, userUID string, order string)
+}

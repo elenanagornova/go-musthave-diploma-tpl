@@ -1,32 +1,45 @@
 package controller
 
+import (
+	"context"
+	"github.com/dgrijalva/jwt-go"
+	"go-musthave-diploma-tpl/internal/pkg/auth"
+	"net/http"
+	"strings"
+)
+
 type CtxKey string
 
 const UserCtxKey = CtxKey("UserID")
 
-//func UserMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		if r.URL.Path == "register" {
-//			token, _ := auth.CreateToken()
-//			http.SetCookie(w, &token)
-//		}
-//	})
-//}
-//
-//func userUIDFromRequest(r *http.Request) string {
-//	uid := r.Context().Value(UserCtxKey)
-//	if uid == nil {
-//		return ""
-//	}
-//	if userID, ok := uid.(string); ok {
-//		return userID
-//	}
-//	return ""
-//}
-//
-//func Welcome(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		if strings.Contains(r.URL.Path, "register") {
-//			next.ServeHTTP(w, r)
-//		}
-//	}}
+func JwtMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.URL.Path, "register") && !strings.Contains(r.URL.Path, "login") {
+			c, err := r.Cookie("token")
+			if err != nil {
+				if err == http.ErrNoCookie {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			tknStr := c.Value
+			userLogin, err := auth.CheckToken(tknStr)
+			if err != nil {
+				if err == jwt.ErrSignatureInvalid {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			if userLogin == "" {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), UserCtxKey, userLogin)))
+		}
+		next.ServeHTTP(w, r)
+	})
+}

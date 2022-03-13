@@ -10,6 +10,7 @@ type Gophermart struct {
 	Addr            string
 	UserRepo        UserRepo
 	UserAccountRepo UserAccountRepo
+	UserOrderRepo   UserOrderRepo
 }
 
 func (g Gophermart) RegisterUser(context context.Context, login string, password string) error {

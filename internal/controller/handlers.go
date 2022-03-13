@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/ShiraazMoollatjie/goluhn"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgconn"
@@ -17,17 +18,73 @@ import (
 func NewRouter(context context.Context, service *gophermart.Gophermart) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(JwtMiddleware)
 	//
 	r.Post("/api/user/register", UserRegister(context, service))
 	r.Post("/api/user/login", LoginUser(context, service))
-	//r.Post("/api/user/orders", controller.UploadUserOrder(service))
-	//r.Get("/api/user/orders", controller.GetUserOrders(service))
-	//r.Get("/api/user/balance", controller.GetUserBalance(service))
-	//r.Post("/api/user/balance/withdraw", controller.WithdrawBalance(service))
-	//r.Get("/ping", controller.CheckConn(service))
+	r.Post("/api/user/orders", UploadUserOrder(context, service))
+	r.Get("/api/user/orders", GetUserOrders(context, service))
+	r.Get("/api/user/balance", GetUserBalance(context, service))
+	r.Post("/api/user/balance/withdraw", WithdrawBalance(context, service))
+	r.Get("/ping", CheckConn(context, service))
 	return r
 }
 
+func CheckConn(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {}
+}
+
+func WithdrawBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {}
+}
+
+func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {}
+}
+
+func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {}
+}
+
+func UploadUserOrder(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var order int
+		err := json.NewDecoder(r.Body).Decode(&order)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		if goluhn.Validate(string(order)) != nil {
+			http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+			return
+		}
+
+		user, err := service.UserRepo.GetUser(ctx, userLoginFromRequest(r))
+		if err == gophermart.ErrAuth {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		if err == gophermart.ErrUserNotFound {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		service.UserOrderRepo.AddUserOrder(ctx, user.UID, string(order))
+
+	}
+}
+func userLoginFromRequest(r *http.Request) string {
+	uid := r.Context().Value(UserCtxKey)
+	if uid == nil {
+		return ""
+	}
+	if userID, ok := uid.(string); ok {
+		return userID
+	}
+	return ""
+}
+
+//LoginUser аутентификация юзера
 func LoginUser(context context.Context, service *gophermart.Gophermart) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var userLoginRequest Openapi.UserLoginRequest

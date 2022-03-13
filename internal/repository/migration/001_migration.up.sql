@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS orders
     accrual         decimal (15,2)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS orders_idx ON orders USING btree (id);
+CREATE UNIQUE INDEX IF NOT EXISTS order_num_idx ON orders USING btree (order_num);
+
 
 CREATE TABLE IF NOT EXISTS withdrawals
 (
