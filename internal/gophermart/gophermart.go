@@ -34,6 +34,21 @@ func (g Gophermart) RegisterUser(context context.Context, login string, password
 	return nil
 }
 
+func (g Gophermart) LoginUser(ctx context.Context, login string, password string) error {
+	user, err := g.UserRepo.GetUser(ctx, login)
+	if err != nil {
+		if err == ErrUserNotFound {
+			return ErrUserNotFound
+		}
+		return err
+	}
+
+	if !hasher.CheckPassword(user.Password, []byte(password)) {
+		return ErrAuth
+	}
+	return nil
+}
+
 func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo) *Gophermart {
 	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo}
 }

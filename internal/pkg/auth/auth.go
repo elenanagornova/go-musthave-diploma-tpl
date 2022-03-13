@@ -3,39 +3,45 @@ package auth
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"net/http"
 	"time"
 )
 
-var jwtKey = []byte("diploma_prj_key") // можно получить откуда-нибудь
+var JwtKey = []byte("diploma_prj_key") // можно получить откуда-нибудь
 
 type UserClaims struct {
 	UserName string `json:"username"`
-	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
-func createToken(username string) (string, error) {
+func CreateToken(username string) (http.Cookie, error) {
+	expiredAt := time.Now().Add(time.Hour * 24)
 	claims := UserClaims{
 		UserName: username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+			ExpiresAt: expiredAt.Unix(),
 			Issuer:    "Gophermart",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(jwtKey))
+	signedToken, err := token.SignedString(JwtKey)
 	if err != nil {
-		return "", err
+		return http.Cookie{}, err
 	}
-	return signedToken, nil
+	cookie := http.Cookie{
+		Name:    "token",
+		Value:   signedToken,
+		Expires: expiredAt,
+	}
+	return cookie, err
 }
 
-func getClaims(jwtToken string) (*UserClaims, error) {
+func GetClaims(jwtToken string) (*UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		jwtToken,
 		&UserClaims{},
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtKey), nil
+			return []byte(JwtKey), nil
 		},
 	)
 	if err != nil {
