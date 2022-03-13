@@ -31,20 +31,19 @@ paths:
           name: number
           required: true
           schema:
-            $ref: '#/components/schemas/Order'
+            type: string
+            minLength: 2
+            description: номер заказа
 
 components:
   schemas:
-    Order:
-      type: string
-      minLength: 2
-      description: номер заказа
-
     Response:
       type: object
       properties:
         order:
-          $ref: '#/components/schemas/Order'
+          type: string
+          minLength: 2
+          description: номер заказа
         status:
           type: string
         accrual:

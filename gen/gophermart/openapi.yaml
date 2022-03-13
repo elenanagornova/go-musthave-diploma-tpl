@@ -140,17 +140,15 @@ paths:
       responses:
         200:
           description: успешная обработка запроса
-          $ref: '#/components/schemas/GetUserWithdrawalsResponse'
+          content:
+            application/json:
+              $ref: '#/components/schemas/GetUserWithdrawalsResponse'
         204:
           description: нет ни одного списания
         401:
           description: пользователь не авторизован
         500:
           description: внутренняя ошибка сервера
-
-
-
-
 
 
 components:
@@ -234,7 +232,6 @@ components:
 
     Withdrawals:
       type: object
-      required: [ order, sum, processed_at ]
       properties:
         order:
           type: string
@@ -243,3 +240,4 @@ components:
           multipleOf: 0.01
         processed_at:
           type: string
+      required: [ order, sum, processed_at ]

@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/jackc/pgx/v4"
 	"go-musthave-diploma-tpl/internal/config"
 	"go-musthave-diploma-tpl/internal/controller"
 	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/repository"
+	"go-musthave-diploma-tpl/internal/repository/account"
+	"go-musthave-diploma-tpl/internal/repository/user"
 	"log"
 	"net/http"
 	"os"
@@ -17,38 +17,30 @@ import (
 
 func main() {
 	cfg := config.LoadServerConfiguration()
-	_, cancel := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
 	defer cancel()
 
-	repo, err := repository.NewRepository(cfg)
+	conn, err := pgx.Connect(context.Background(), cfg.DatabaseDSN)
 	if err != nil {
-		panic(fmt.Sprintf("Can't create repository: %s", err.Error()))
+		log.Fatal(err)
+	}
+	m, err := repository.RunMigration(cfg.DatabaseDSN)
+	if err != nil && !m {
+		log.Fatal(err)
 	}
 
-	service := gophermart.New(cfg.RunAddr, repo)
+	userRepo := user.NewUserRepository(conn)
+	userAccountRepo := account.NewUserAccountRepository(conn)
+	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo)
 
 	log.Println("Starting server at port 8080")
 
 	srv := http.Server{
 		Addr:    cfg.RunAddr,
-		Handler: NewRouter(service),
+		Handler: controller.NewRouter(ctx, service),
 	}
 
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-}
-
-func NewRouter(service *gophermart.Loyalty) http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-
-	r.Post("/api/user/register", controller.RegisterUser(service))
-	r.Post("/api/user/login", controller.LoginUser(service))
-	r.Post("/api/user/orders", controller.UploadUserOrder(service))
-	r.Get("/api/user/orders", controller.GetUserOrders(service))
-	r.Get("/api/user/balance", controller.GetUserBalance(service))
-	r.Post("/api/user/balance/withdraw", controller.WithdrawBalance(service))
-	r.Get("/ping", controller.CheckConn(service))
-	return r
 }
