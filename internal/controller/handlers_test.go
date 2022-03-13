@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go-musthave-diploma-tpl/internal/gophermart"
+	"go-musthave-diploma-tpl/internal/repository/account"
 	"go-musthave-diploma-tpl/internal/repository/user"
 	"io"
 	"io/ioutil"
@@ -80,7 +81,7 @@ func TestUserRegister(t *testing.T) {
 		}}
 	//urMock := &mocks.UserRepo{}
 	//urMock.On("AddUser" ,mock.Anything).Return(errors.New("pgerrcode.UniqueViolation"))
-	service := gophermart.NewGophermart(testAddr, user.NewUserRepository(nil))
+	service := gophermart.NewGophermart(testAddr, user.NewUserRepository(nil), account.NewUserAccountRepository(nil))
 
 	r := NewRouter(nil, service)
 	ts := httptest.NewServer(r)
