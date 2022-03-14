@@ -59,8 +59,8 @@ func (g Gophermart) AddOrder(ctx context.Context, login string, orderNum string)
 		return err
 	}
 	order := models.NewOrder(user.UID, orderNum)
-	if errDb := g.UserOrderRepo.AddUserOrder(ctx, order); errDb != nil {
-		if IsPgUniqueViolationError(errDb) {
+	if errDB := g.UserOrderRepo.AddUserOrder(ctx, order); errDB != nil {
+		if IsPgUniqueViolationError(errDB) {
 			order, err := g.UserOrderRepo.GetOrder(ctx, orderNum)
 			if err != nil {
 				return err
