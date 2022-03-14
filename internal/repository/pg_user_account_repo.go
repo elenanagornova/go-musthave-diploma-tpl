@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/jackc/pgx/v4"
+	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
 )
 
@@ -15,6 +16,7 @@ func NewUserAccountRepository(conn *pgx.Conn) *UserAccountRepository {
 }
 
 var queryAddAccount = "insert into gophermart.account_info(user_uid, balance, withdrawal) values($1, $2, $3)"
+var queryGetBalance = "select balance, withdrawal from gophermart.account_info where user_uid=$1"
 
 func (u UserAccountRepository) AddAccount(ctx context.Context, account models.Account) error {
 	tx, err := u.conn.Begin(ctx)
@@ -33,7 +35,15 @@ func (u UserAccountRepository) AddAccount(ctx context.Context, account models.Ac
 }
 
 func (u UserAccountRepository) GetAccount(ctx context.Context, userID string) (models.Account, error) {
-	panic("implement me")
+	var account models.Account
+	result := u.conn.QueryRow(ctx, queryGetBalance, userID)
+	if err := result.Scan(&account.Balance, &account.Withdrawals); err != nil {
+		if err.Error() == "no rows in result set" {
+			return models.Account{}, gophermart.ErrUserNotFound
+		}
+		return models.Account{}, err
+	}
+	return account, nil
 }
 
 func (u UserAccountRepository) RefillAmount(ctx context.Context, userID string, diff float32) error {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	Openapi "go-musthave-diploma-tpl/gen/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
 	"go-musthave-diploma-tpl/internal/pkg/hasher"
 )
@@ -81,6 +82,18 @@ func (g Gophermart) GetUserOrders(ctx context.Context, login string) []models.Or
 		return nil
 	}
 	return g.UserOrderRepo.GetUserOrders(ctx, user.UID)
+}
+
+func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.GetUserBalanceResponse, error) {
+	user, err := g.UserRepo.GetUser(ctx, login)
+	if err != nil {
+		return Openapi.GetUserBalanceResponse{}, err
+	}
+	account, err := g.UserAccountRepo.GetAccount(ctx, user.UID)
+	if err != nil {
+		return Openapi.GetUserBalanceResponse{}, err
+	}
+	return Openapi.GetUserBalanceResponse{Current: account.Balance, Withdrawn: account.Withdrawals}, nil
 }
 func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo) *Gophermart {
 	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo}

@@ -38,6 +38,18 @@ func WithdrawBalance(ctx context.Context, service *gophermart.Gophermart) http.H
 
 func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		login := userLoginFromRequest(r)
+		body, err := service.GetUserBalance(ctx, login)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(body); err != nil {
+			http.Error(w, "Unmarshalling error", http.StatusBadRequest)
+			return
+		}
 
 	}
 }
