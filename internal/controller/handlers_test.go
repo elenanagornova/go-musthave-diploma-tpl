@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go-musthave-diploma-tpl/internal/gophermart"
-	"go-musthave-diploma-tpl/internal/repository/account"
-	"go-musthave-diploma-tpl/internal/repository/user"
+	"go-musthave-diploma-tpl/internal/repository"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -81,9 +81,9 @@ func TestUserRegister(t *testing.T) {
 		}}
 	//urMock := &mocks.UserRepo{}
 	//urMock.On("AddUser" ,mock.Anything).Return(errors.New("pgerrcode.UniqueViolation"))
-	service := gophermart.NewGophermart(testAddr, user.NewUserRepository(nil), account.NewUserAccountRepository(nil))
+	service := gophermart.NewGophermart(testAddr, repository.NewUserRepository(nil), repository.NewUserAccountRepository(nil), repository.NewUserOrderRepository(nil))
 
-	r := NewRouter(nil, service)
+	r := NewRouter(context.Background(), service)
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 

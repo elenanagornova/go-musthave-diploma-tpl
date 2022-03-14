@@ -2,6 +2,9 @@ package gophermart
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"go-musthave-diploma-tpl/internal/models"
 	"go-musthave-diploma-tpl/internal/pkg/hasher"
 )
@@ -50,6 +53,32 @@ func (g Gophermart) LoginUser(ctx context.Context, login string, password string
 	return nil
 }
 
-func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo) *Gophermart {
-	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo}
+func (g Gophermart) AddOrder(ctx context.Context, login string, orderNum string) error {
+	user, err := g.UserRepo.GetUser(ctx, login)
+	if err != nil {
+		return err
+	}
+	order := models.NewOrder(user.UID, orderNum)
+	if errDb := g.UserOrderRepo.AddUserOrder(ctx, order); errDb != nil {
+		if IsPgUniqueViolationError(errDb) {
+			order, err := g.UserOrderRepo.GetOrder(ctx, orderNum)
+			if err != nil {
+				return err
+			}
+			if order.UID == user.UID {
+				return ErrOrderExists
+			} else {
+				return ErrOrderOwnedByAnotherUser
+			}
+		}
+	}
+	return nil
+}
+func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo) *Gophermart {
+	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo}
+}
+
+func IsPgUniqueViolationError(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation
 }

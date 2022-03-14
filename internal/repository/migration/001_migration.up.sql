@@ -1,8 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS gophermart;
--- DROP SCHEMA gophermart CASCADE ;
---CREATE SCHEMA gophermart;
 SET SEARCH_PATH TO gophermart;
--- добавить дату создания и удаления?
+
 CREATE TABLE IF NOT EXISTS users
 (
     id              serial primary key,
@@ -20,11 +18,11 @@ CREATE TABLE IF NOT EXISTS orders
     order_num       varchar,
     uploaded_at     TIMESTAMP,
     status          varchar,
-    accrual         decimal (15,2)
+    accrual         decimal (15,2),
+    retry_count     int
 );
 CREATE UNIQUE INDEX IF NOT EXISTS orders_idx ON orders USING btree (id);
 CREATE UNIQUE INDEX IF NOT EXISTS order_num_idx ON orders USING btree (order_num);
-
 
 CREATE TABLE IF NOT EXISTS withdrawals
 (

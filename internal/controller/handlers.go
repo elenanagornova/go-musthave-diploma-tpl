@@ -3,16 +3,14 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"go-musthave-diploma-tpl/gen/gophermart"
 	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/pkg/auth"
 	"net/http"
+	"strconv"
 )
 
 func NewRouter(context context.Context, service *gophermart.Gophermart) http.Handler {
@@ -48,29 +46,37 @@ func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.Han
 
 func UploadUserOrder(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var order int
-		err := json.NewDecoder(r.Body).Decode(&order)
+		var orderNum int
+		err := json.NewDecoder(r.Body).Decode(&orderNum)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		if goluhn.Validate(string(order)) != nil {
+
+		strOrderNum := strconv.Itoa(orderNum)
+		if goluhn.Validate(strOrderNum) != nil {
 			http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
 			return
 		}
 
-		user, err := service.UserRepo.GetUser(ctx, userLoginFromRequest(r))
-		if err == gophermart.ErrAuth {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-		if err == gophermart.ErrUserNotFound {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
+		login := userLoginFromRequest(r)
+		addOrderErr := service.AddOrder(ctx, login, strOrderNum)
+		if addOrderErr != nil {
+			if addOrderErr == gophermart.ErrOrderOwnedByAnotherUser {
+				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+				return
+			} else if addOrderErr == gophermart.ErrOrderExists {
+				w.WriteHeader(http.StatusOK)
+				return
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 		}
 
-		service.UserOrderRepo.AddUserOrder(ctx, user.UID, string(order))
-
+		token, _ := auth.CreateToken(login)
+		http.SetCookie(w, &token)
+		w.WriteHeader(http.StatusAccepted)
 	}
 }
 func userLoginFromRequest(r *http.Request) string {
@@ -118,14 +124,21 @@ func UserRegister(context context.Context, service *gophermart.Gophermart) http.
 		}
 
 		if error := service.RegisterUser(context, registerRequest.Login, registerRequest.Password); error != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(error, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			if gophermart.IsPgUniqueViolationError(error) {
 				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 				return
 			}
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		//	var pgErr *pgconn.PgError
+		//	if errors.As(error, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+		//		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		//		return
+		//	}
+		//	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		//	return
+		//}
 		//TODO: с миддлваре сделать?
 		token, _ := auth.CreateToken(registerRequest.Login)
 		http.SetCookie(w, &token)

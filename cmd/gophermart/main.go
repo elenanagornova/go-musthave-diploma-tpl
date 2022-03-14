@@ -7,8 +7,6 @@ import (
 	"go-musthave-diploma-tpl/internal/controller"
 	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/repository"
-	"go-musthave-diploma-tpl/internal/repository/account"
-	"go-musthave-diploma-tpl/internal/repository/user"
 	"log"
 	"net/http"
 	"os"
@@ -29,9 +27,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userRepo := user.NewUserRepository(conn)
-	userAccountRepo := account.NewUserAccountRepository(conn)
-	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo)
+	userRepo := repository.NewUserRepository(conn)
+	userAccountRepo := repository.NewUserAccountRepository(conn)
+	userOrderRepo := repository.NewUserOrderRepository(conn)
+	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo, userOrderRepo)
 
 	log.Println("Starting server at port 8080")
 
