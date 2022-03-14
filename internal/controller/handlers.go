@@ -37,7 +37,9 @@ func WithdrawBalance(ctx context.Context, service *gophermart.Gophermart) http.H
 }
 
 func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
 }
 
 func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
@@ -105,8 +107,6 @@ func userLoginFromRequest(r *http.Request) string {
 	}
 	return ""
 }
-
-//LoginUser аутентификация юзера
 func LoginUser(context context.Context, service *gophermart.Gophermart) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var userLoginRequest Openapi.UserLoginRequest
