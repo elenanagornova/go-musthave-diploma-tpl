@@ -41,7 +41,23 @@ func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.Ha
 }
 
 func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		userOrders := service.GetUserOrders(ctx, userLoginFromRequest(r))
+		if len(userOrders) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		var orders Openapi.GetUserOrdersResponse
+		for _, order := range userOrders {
+			orders = append(orders, Openapi.Order{Accrual: &order.Accrual, Number: order.OrderID, Status: order.Status, UploadedAt: order.UploadedAt.String()})
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(orders); err != nil {
+			http.Error(w, "Unmarshalling error", http.StatusBadRequest)
+			return
+		}
+	}
 }
 
 func UploadUserOrder(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {

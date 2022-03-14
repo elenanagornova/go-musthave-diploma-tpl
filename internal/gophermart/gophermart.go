@@ -74,6 +74,14 @@ func (g Gophermart) AddOrder(ctx context.Context, login string, orderNum string)
 	}
 	return nil
 }
+
+func (g Gophermart) GetUserOrders(ctx context.Context, login string) []models.Order {
+	user, err := g.UserRepo.GetUser(ctx, login)
+	if err != nil {
+		return nil
+	}
+	return g.UserOrderRepo.GetUserOrders(ctx, user.UID)
+}
 func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo) *Gophermart {
 	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo}
 }

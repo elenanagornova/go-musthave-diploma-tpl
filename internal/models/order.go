@@ -13,11 +13,11 @@ const (
 
 // Order заказ, загружаемый пользователем, за который могут быть начислены баллы лояльности
 type Order struct {
-	UID        string      `json:",omitempty"`
-	OrderID    string      `json:"number"`
-	UploadedAt time.Time   `json:"uploaded_at"`
-	Status     OrderStatus `json:"status"`
-	Accrual    float32     `json:"accrual"`
+	UID        string    `json:",omitempty"`
+	OrderID    string    `json:"number"`
+	UploadedAt time.Time `json:"uploaded_at"`
+	Status     string    `json:"status"`
+	Accrual    float32   `json:"accrual"`
 
 	// RetryCount количество попыток получить начисления во внешнем сервисе
 	RetryCount int `json:",omitempty"`

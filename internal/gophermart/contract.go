@@ -21,4 +21,5 @@ type UserAccountRepo interface {
 type UserOrderRepo interface {
 	AddUserOrder(ctx context.Context, order models.Order) error
 	GetOrder(ctx context.Context, orderNum string) (models.Order, error)
+	GetUserOrders(ctx context.Context, userUID string) []models.Order
 }
