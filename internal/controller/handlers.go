@@ -11,6 +11,7 @@ import (
 	"go-musthave-diploma-tpl/internal/pkg/auth"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func NewRouter(context context.Context, service *gophermart.Gophermart) http.Handler {
@@ -92,7 +93,7 @@ func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.Han
 		}
 		var orders Openapi.GetUserOrdersResponse
 		for _, order := range userOrders {
-			orders = append(orders, Openapi.Order{Accrual: &order.Accrual, Number: order.OrderID, Status: order.Status, UploadedAt: order.UploadedAt.Format("2020-12-09T16:09:57+03:00")})
+			orders = append(orders, Openapi.Order{Accrual: &order.Accrual, Number: order.OrderID, Status: order.Status, UploadedAt: order.UploadedAt.Format(time.RFC3339)})
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
