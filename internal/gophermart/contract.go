@@ -23,3 +23,7 @@ type UserOrderRepo interface {
 	GetOrder(ctx context.Context, orderNum string) (models.Order, error)
 	GetUserOrders(ctx context.Context, userUID string) []models.Order
 }
+
+type WithdrawalRepo interface {
+	GetWithdrawals(ctx context.Context) []models.Withdrawal
+}

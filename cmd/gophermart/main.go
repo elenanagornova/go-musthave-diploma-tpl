@@ -30,7 +30,8 @@ func main() {
 	userRepo := repository.NewUserRepository(conn)
 	userAccountRepo := repository.NewUserAccountRepository(conn)
 	userOrderRepo := repository.NewUserOrderRepository(conn)
-	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo, userOrderRepo)
+	withdrawalRepo := repository.NewWithdrawalRepository(conn)
+	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo, userOrderRepo, withdrawalRepo)
 
 	log.Println("Starting server at port 8080")
 

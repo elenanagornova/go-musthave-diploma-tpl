@@ -24,8 +24,15 @@ func NewRouter(context context.Context, service *gophermart.Gophermart) http.Han
 	r.Get("/api/user/orders", GetUserOrders(context, service))
 	r.Get("/api/user/balance", GetUserBalance(context, service))
 	r.Post("/api/user/balance/withdraw", WithdrawBalance(context, service))
+	r.Get("/api/user/withdrawals", GetWithdrawals(context, service))
 	r.Get("/ping", CheckConn(context, service))
 	return r
+}
+
+func GetWithdrawals(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		service.GetWithdrawals(ctx)
+	}
 }
 
 func CheckConn(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {

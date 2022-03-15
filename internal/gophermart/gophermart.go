@@ -15,6 +15,7 @@ type Gophermart struct {
 	UserRepo        UserRepo
 	UserAccountRepo UserAccountRepo
 	UserOrderRepo   UserOrderRepo
+	WithdrawalRepo  WithdrawalRepo
 }
 
 func (g Gophermart) RegisterUser(context context.Context, login string, password string) error {
@@ -99,8 +100,13 @@ func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.G
 func (g Gophermart) WithDrawUserBalance(ctx context.Context, login string, withdrawRequest Openapi.UserBalanceWithdrawRequest) error {
 	return g.UserAccountRepo.WithdrawalAmount(ctx, login, withdrawRequest.Sum, withdrawRequest.Order)
 }
-func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo) *Gophermart {
-	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo}
+
+func (g Gophermart) GetWithdrawals(ctx context.Context) []models.Withdrawal {
+	return g.WithdrawalRepo.GetWithdrawals(ctx)
+
+}
+func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo, withdrawalRepo WithdrawalRepo) *Gophermart {
+	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo, WithdrawalRepo: withdrawalRepo}
 }
 
 func IsPgUniqueViolationError(err error) bool {
