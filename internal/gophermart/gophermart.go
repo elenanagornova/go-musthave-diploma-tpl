@@ -95,6 +95,10 @@ func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.G
 	}
 	return Openapi.GetUserBalanceResponse{Current: account.Balance, Withdrawn: account.Withdrawals}, nil
 }
+
+func (g Gophermart) WithDrawUserBalance(ctx context.Context, login string, withdrawRequest Openapi.UserBalanceWithdrawRequest) error {
+	return g.UserAccountRepo.WithdrawalAmount(ctx, login, withdrawRequest.Sum, withdrawRequest.Order)
+}
 func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo) *Gophermart {
 	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo}
 }

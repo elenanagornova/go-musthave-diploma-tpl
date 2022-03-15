@@ -9,4 +9,6 @@ var (
 	ErrOrderExists             = errors.New("order already exists")
 	ErrOrderOwnedByAnotherUser = errors.New("order uploaded by another user")
 	ErrInvalidOrderFormat      = errors.New("order format error")
+	ErrNoMoney                 = errors.New("no money")
+	ErrOrderNotFound           = errors.New("order not found for user")
 )

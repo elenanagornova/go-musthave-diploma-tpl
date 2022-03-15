@@ -33,7 +33,30 @@ func CheckConn(ctx context.Context, service *gophermart.Gophermart) http.Handler
 }
 
 func WithdrawBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		var withdrawRequest Openapi.UserBalanceWithdrawRequest
+		err := json.NewDecoder(r.Body).Decode(&withdrawRequest)
+		if err != nil || withdrawRequest.Order == "" || withdrawRequest.Sum == 0 {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		login := userLoginFromRequest(r)
+
+		if err := service.WithDrawUserBalance(ctx, login, withdrawRequest); err != nil {
+			if err == gophermart.ErrNoMoney {
+				w.WriteHeader(http.StatusPaymentRequired)
+				return
+			}
+			if err == gophermart.ErrOrderNotFound {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.HandlerFunc {
@@ -50,7 +73,6 @@ func GetUserBalance(ctx context.Context, service *gophermart.Gophermart) http.Ha
 			http.Error(w, "Unmarshalling error", http.StatusBadRequest)
 			return
 		}
-
 	}
 }
 
