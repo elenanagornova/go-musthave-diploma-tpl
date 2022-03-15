@@ -6,7 +6,7 @@ import (
 	"go-musthave-diploma-tpl/internal/models"
 )
 
-func UploadValuesToDb(ctx context.Context, g *gophermart.Gophermart) {
+func UploadValuesToDB(ctx context.Context, g *gophermart.Gophermart) {
 	user, _ := models.NewUser("sdkfsd", "dskdjfsee")
 	g.UserRepo.AddUser(ctx, user)
 
