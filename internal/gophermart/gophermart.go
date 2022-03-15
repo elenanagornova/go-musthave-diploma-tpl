@@ -88,7 +88,9 @@ func (g Gophermart) GetUserOrders(ctx context.Context, login string) []models.Or
 	if err != nil {
 		return nil
 	}
-	return g.UserOrderRepo.GetUserOrders(ctx, user.UID)
+	println(user.UID)
+	//return g.UserOrderRepo.GetUserOrders(ctx, user.UID)
+	return g.UserOrderRepo.GetAllUserOrders(ctx)
 }
 
 func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.GetUserBalanceResponse, error) {
