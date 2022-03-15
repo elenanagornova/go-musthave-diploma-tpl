@@ -14,5 +14,4 @@ func NewWithdrawal(OrderNum string, Sum float32) Withdrawal {
 		Sum:         Sum,
 		ProcessedAt: time.Now(),
 	}
-
 }

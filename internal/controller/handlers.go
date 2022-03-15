@@ -92,7 +92,7 @@ func GetUserOrders(ctx context.Context, service *gophermart.Gophermart) http.Han
 		}
 		var orders Openapi.GetUserOrdersResponse
 		for _, order := range userOrders {
-			orders = append(orders, Openapi.Order{Accrual: &order.Accrual, Number: order.OrderID, Status: order.Status, UploadedAt: order.UploadedAt.String()})
+			orders = append(orders, Openapi.Order{Accrual: &order.Accrual, Number: order.OrderID, Status: order.Status, UploadedAt: order.UploadedAt.Format("2006-01-02 15:04:05")})
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

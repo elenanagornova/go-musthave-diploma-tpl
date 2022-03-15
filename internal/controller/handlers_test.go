@@ -79,8 +79,6 @@ func TestUserRegister(t *testing.T) {
 				responseBody:       "",
 			},
 		}}
-	//urMock := &mocks.UserRepo{}
-	//urMock.On("AddUser" ,mock.Anything).Return(errors.New("pgerrcode.UniqueViolation"))
 	service := gophermart.NewGophermart(testAddr, repository.NewUserRepository(nil), repository.NewUserAccountRepository(nil), repository.NewUserOrderRepository(nil), nil)
 
 	r := NewRouter(context.Background(), service)
