@@ -35,6 +35,8 @@ func main() {
 
 	log.Println("Starting server at port 8080")
 
+	repository.UploadValuesToDb(ctx, service)
+
 	go service.UpdateOrders(ctx)
 	srv := http.Server{
 		Addr:    cfg.RunAddr,

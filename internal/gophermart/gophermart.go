@@ -109,7 +109,6 @@ func (g Gophermart) WithDrawUserBalance(ctx context.Context, login string, withd
 
 func (g Gophermart) GetWithdrawals(ctx context.Context) []models.Withdrawal {
 	return g.WithdrawalRepo.GetWithdrawals(ctx)
-
 }
 func NewGophermart(addr string, AccrualAddr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo, withdrawalRepo WithdrawalRepo) *Gophermart {
 	return &Gophermart{Addr: addr, AccrualAddr: AccrualAddr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo, WithdrawalRepo: withdrawalRepo}
