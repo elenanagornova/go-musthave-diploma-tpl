@@ -80,7 +80,7 @@ func (or *orderRequest) worker(ctx context.Context) {
 }
 
 func (or *orderRequest) queryOrder(order models.Order) (*orderResponse, error) {
-	url := fmt.Sprintf("%s/api/orders/%w", or.accrualAddr, order.OrderID)
+	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
 	resp, err := or.client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed get %s: %w", url, err)
