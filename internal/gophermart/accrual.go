@@ -9,7 +9,7 @@ import (
 
 const (
 	workers      = 100
-	retryTimeout = 50 * time.Millisecond
+	retryTimeout = 1 * time.Second
 )
 
 var validStatuses = map[string]bool{
@@ -27,13 +27,13 @@ func (g Gophermart) UpdateOrders(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(25 * time.Millisecond):
+		case <-time.After(1 * time.Second):
 			orders := g.UserOrderRepo.GetNewAndProcessingOrders(ctx)
 			log.Println(orders)
 			if len(orders) > 0 {
 				or := newOrderRequest(g.AccrualAddr)
 				toWriteOrders := or.run(ctx, orders)
-				g.UserOrderRepo.UpdateOrdersStateFromAccrual(ctx, toWriteOrders)
+				g.UpdateStates(ctx, toWriteOrders)
 			}
 		}
 	}

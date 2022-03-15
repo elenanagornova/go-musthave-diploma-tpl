@@ -15,6 +15,7 @@ type UserAccountRepo interface {
 	GetAccount(ctx context.Context, userID string) (models.Account, error)
 	RefillAmount(ctx context.Context, userID string, diff float32) error
 	WithdrawalAmount(ctx context.Context, userID string, diff float32, orderNum string) error
+	UpdateBalance(ctx context.Context, order Result) error
 }
 
 type UserOrderRepo interface {

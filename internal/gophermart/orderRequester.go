@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-musthave-diploma-tpl/internal/models"
-	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -82,9 +81,7 @@ func (or *orderRequest) worker(ctx context.Context) {
 
 func (or *orderRequest) queryOrder(order models.Order) (*orderResponse, error) {
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
-	log.Println("REQUEST to ACCRUAL:" + url)
 	resp, err := or.client.Get(url)
-	log.Println("RESPONSE FROM ACCRUAL:" + resp.Status + "!!!")
 	if err != nil {
 		return nil, fmt.Errorf("failed get %s: %w", url, err)
 	}

@@ -20,6 +20,7 @@ var queryGetBalance = "select balance, withdrawal from gophermart.account_info w
 var queryGetUserBalanceOrder = "SELECT u.user_uid, a.balance, a.withdrawal, o.order_num FROM gophermart.users u INNER JOIN  gophermart.account_info a on a.user_uid = u.user_uid JOIN gophermart.orders o on a.user_uid = o.user_uid WHERE u.login=$1 AND o.order_num=$2"
 var queryUpdateByWithdrawal = "update gophermart.account_info set balance=$1, withdrawal=$2 where user_uid=$3"
 var queryAddWithdrawal = "insert into gophermart.withdrawals(order_num, sum, processed_at) values($1, $2, $3)"
+var queryUpdateBalance = "update gophermart.account_info set balance=($1+balance) where user_uid=(select user_uid from gophermart.orders where order_num=$2)"
 
 type UserBalanceWithOrder struct {
 	userUID    string
@@ -91,7 +92,21 @@ func (u UserAccountRepository) WithdrawalAmount(ctx context.Context, login strin
 func (u UserAccountRepository) RefillAmount(ctx context.Context, userID string, diff float32) error {
 	panic("implement me")
 }
-
+func (u UserAccountRepository) UpdateBalance(ctx context.Context, order gophermart.Result) error {
+	tx, err := u.conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(ctx, queryUpdateBalance, order.Accrual, order.OrderID)
+	if err != nil {
+		return err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return err
+	}
+	return nil
+}
 func (u UserAccountRepository) Close() error {
 	panic("implement me")
 }

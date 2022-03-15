@@ -112,6 +112,16 @@ func (g Gophermart) WithDrawUserBalance(ctx context.Context, login string, withd
 func (g Gophermart) GetWithdrawals(ctx context.Context) []models.Withdrawal {
 	return g.WithdrawalRepo.GetWithdrawals(ctx)
 }
+
+func (g Gophermart) UpdateStates(ctx context.Context, orders []Result) {
+	g.UserOrderRepo.UpdateOrdersStateFromAccrual(ctx, orders)
+	for _, order := range orders {
+		if order.Status == "PROCESSED" {
+			g.UserAccountRepo.UpdateBalance(ctx, order)
+		}
+	}
+
+}
 func NewGophermart(addr string, AccrualAddr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo, withdrawalRepo WithdrawalRepo) *Gophermart {
 	return &Gophermart{Addr: addr, AccrualAddr: AccrualAddr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo, WithdrawalRepo: withdrawalRepo}
 }
