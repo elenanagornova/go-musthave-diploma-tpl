@@ -38,7 +38,10 @@ func main() {
 		Addr:    cfg.RunAddr,
 		Handler: controller.NewRouter(ctx, service),
 	}
-
+	go func() {
+		<-ctx.Done()
+		srv.Close()
+	}()
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
