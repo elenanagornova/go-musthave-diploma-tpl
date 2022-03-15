@@ -11,9 +11,30 @@ var queryAddOrder = "insert into gophermart.orders(user_uid, order_num, uploaded
 var queryGetOrder = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where order_num=$1"
 var queryGetOrdersByUserUID = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where user_uid=$1"
 var queryGetNewAndProcessingOrders = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where status='NEW' OR status='PROCESSING'"
+var queryUpdateOrderState = "update gophermart.orders set status=$1, accrual=$2, retry_count=$3 where order_num=$4 and status!=$1"
 
 type UserOrderRepository struct {
 	conn *pgx.Conn
+}
+
+func (u UserOrderRepository) UpdateOrdersStateFromAccrual(ctx context.Context, orders []gophermart.Result) error {
+	tx, err := u.conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	for _, value := range orders {
+		_, err = tx.Exec(ctx, queryUpdateOrderState, value.Status, value.Accrual, value.RetryCount, value.OrderID)
+		if err != nil {
+			return err
+		}
+		err = tx.Commit(context.Background())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (u UserOrderRepository) GetNewAndProcessingOrders(ctx context.Context) []models.Order {

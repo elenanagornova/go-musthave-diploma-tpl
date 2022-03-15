@@ -5,7 +5,6 @@ import (
 	"go-musthave-diploma-tpl/internal/models"
 )
 
-// UserRepo для работы с сущностью User
 type UserRepo interface {
 	GetUser(ctx context.Context, login string) (models.User, error)
 	AddUser(ctx context.Context, entity models.User) error
@@ -23,6 +22,7 @@ type UserOrderRepo interface {
 	GetOrder(ctx context.Context, orderNum string) (models.Order, error)
 	GetUserOrders(ctx context.Context, userUID string) []models.Order
 	GetNewAndProcessingOrders(ctx context.Context) []models.Order
+	UpdateOrdersStateFromAccrual(ctx context.Context, orders []Result) error
 }
 
 type WithdrawalRepo interface {

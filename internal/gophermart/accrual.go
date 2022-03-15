@@ -3,20 +3,36 @@ package gophermart
 import (
 	"context"
 	"go-musthave-diploma-tpl/internal/models"
+	"time"
 )
+
+const (
+	workers      = 10
+	retryTimeout = 10 * time.Second
+)
+
+var validStatuses = map[string]bool{
+	"INVALID": true, "PROCESSED": true,
+}
 
 func (g Gophermart) GetNewAndProcessingOrders() []models.Order {
 	return g.UserOrderRepo.GetNewAndProcessingOrders(context.Background())
 }
-func (g Gophermart) GetAccruals(orderID string) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	orders := g.GetNewAndProcessingOrders()
-	if orders != nil {
-		for _, order := range orders {
-			response := g.accrualProvider.GetAccrual(ctx, order.OrderID)
-			print(response)
+func (g Gophermart) UpdateOrders(ctx context.Context) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(5 * time.Second):
+			orders := g.UserOrderRepo.GetNewAndProcessingOrders(ctx)
+			if len(orders) > 0 {
+				or := newOrderRequest(g.AccrualAddr)
+				toWriteOrders := or.run(ctx, orders)
+				g.UserOrderRepo.UpdateOrdersStateFromAccrual(ctx, toWriteOrders)
+			}
 		}
 	}
 }
