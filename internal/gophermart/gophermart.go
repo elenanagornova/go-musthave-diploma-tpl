@@ -5,17 +5,25 @@ import (
 	"errors"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	Accrual "go-musthave-diploma-tpl/gen/accrual"
 	Openapi "go-musthave-diploma-tpl/gen/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
 	"go-musthave-diploma-tpl/internal/pkg/hasher"
+	"go-musthave-diploma-tpl/internal/providers"
+	"time"
 )
 
+const accrualDefaultRetryInterval = 50 * time.Millisecond
+
 type Gophermart struct {
-	Addr            string
-	UserRepo        UserRepo
-	UserAccountRepo UserAccountRepo
-	UserOrderRepo   UserOrderRepo
-	WithdrawalRepo  WithdrawalRepo
+	Addr                 string
+	Accrual              Accrual.Client
+	UserRepo             UserRepo
+	UserAccountRepo      UserAccountRepo
+	UserOrderRepo        UserOrderRepo
+	WithdrawalRepo       WithdrawalRepo
+	accrualProvider      providers.Provider
+	accrualRetryInterval time.Duration
 }
 
 func (g Gophermart) RegisterUser(context context.Context, login string, password string) error {
@@ -105,8 +113,8 @@ func (g Gophermart) GetWithdrawals(ctx context.Context) []models.Withdrawal {
 	return g.WithdrawalRepo.GetWithdrawals(ctx)
 
 }
-func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo, withdrawalRepo WithdrawalRepo) *Gophermart {
-	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo, WithdrawalRepo: withdrawalRepo}
+func NewGophermart(addr string, userRepo UserRepo, userAccountRepo UserAccountRepo, userOrderRepo UserOrderRepo, withdrawalRepo WithdrawalRepo, accrualProvider providers.Provider) *Gophermart {
+	return &Gophermart{Addr: addr, UserRepo: userRepo, UserAccountRepo: userAccountRepo, UserOrderRepo: userOrderRepo, WithdrawalRepo: withdrawalRepo, accrualProvider: accrualProvider, accrualRetryInterval: accrualDefaultRetryInterval}
 }
 
 func IsPgUniqueViolationError(err error) bool {

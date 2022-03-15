@@ -10,9 +10,31 @@ import (
 var queryAddOrder = "insert into gophermart.orders(user_uid, order_num, uploaded_at, status, accrual) values($1, $2, $3, $4, $5)"
 var queryGetOrder = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where order_num=$1"
 var queryGetOrdersByUserUID = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where user_uid=$1"
+var queryGetNewAndProcessingOrders = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where status='NEW' OR status='PROCESSING'"
 
 type UserOrderRepository struct {
 	conn *pgx.Conn
+}
+
+func (u UserOrderRepository) GetNewAndProcessingOrders(ctx context.Context) []models.Order {
+	var result []models.Order
+	rows, err := u.conn.Query(ctx, queryGetNewAndProcessingOrders)
+	if err != nil {
+		return nil
+	}
+	for rows.Next() {
+		var order models.Order
+		err = rows.Scan(&order.UID, &order.OrderID, &order.UploadedAt, &order.Status, &order.Accrual)
+		if err != nil {
+			return nil
+		}
+		result = append(result, order)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil
+	}
+	return result
 }
 
 func (u UserOrderRepository) GetUserOrders(ctx context.Context, userUID string) []models.Order {

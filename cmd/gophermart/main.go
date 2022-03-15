@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"github.com/jackc/pgx/v4"
+	Accrual "go-musthave-diploma-tpl/gen/accrual"
 	"go-musthave-diploma-tpl/internal/config"
 	"go-musthave-diploma-tpl/internal/controller"
 	"go-musthave-diploma-tpl/internal/gophermart"
+	"go-musthave-diploma-tpl/internal/providers"
 	"go-musthave-diploma-tpl/internal/repository"
 	"log"
 	"net/http"
@@ -18,6 +20,10 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Kill, os.Interrupt)
 	defer cancel()
 
+	accrualClient, err := Accrual.NewClientWithResponses(cfg.AccuralSystemAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
 	conn, err := pgx.Connect(context.Background(), cfg.DatabaseDSN)
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +37,7 @@ func main() {
 	userAccountRepo := repository.NewUserAccountRepository(conn)
 	userOrderRepo := repository.NewUserOrderRepository(conn)
 	withdrawalRepo := repository.NewWithdrawalRepository(conn)
-	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo, userOrderRepo, withdrawalRepo)
+	service := gophermart.NewGophermart(cfg.RunAddr, userRepo, userAccountRepo, userOrderRepo, withdrawalRepo, providers.NewProvider(accrualClient))
 
 	log.Println("Starting server at port 8080")
 
