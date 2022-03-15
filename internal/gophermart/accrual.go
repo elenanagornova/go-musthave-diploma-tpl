@@ -3,6 +3,7 @@ package gophermart
 import (
 	"context"
 	"go-musthave-diploma-tpl/internal/models"
+	"log"
 	"time"
 )
 
@@ -28,6 +29,7 @@ func (g Gophermart) UpdateOrders(ctx context.Context) {
 			return
 		case <-time.After(5 * time.Second):
 			orders := g.UserOrderRepo.GetNewAndProcessingOrders(ctx)
+			log.Println(orders)
 			if len(orders) > 0 {
 				or := newOrderRequest(g.AccrualAddr)
 				toWriteOrders := or.run(ctx, orders)

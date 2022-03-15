@@ -50,12 +50,8 @@ func (u UserOrderRepository) UpdateOrdersStateFromAccrual(ctx context.Context, o
 		if err != nil {
 			return err
 		}
-		err = tx.Commit(context.Background())
-		if err != nil {
-			return err
-		}
+		tx.Commit(ctx)
 	}
-
 	return nil
 }
 
