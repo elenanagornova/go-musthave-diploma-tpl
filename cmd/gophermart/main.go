@@ -35,7 +35,7 @@ func main() {
 
 	log.Println("Starting server at port 8080")
 
-	service.UpdateOrders(ctx)
+	go service.UpdateOrders(ctx)
 	srv := http.Server{
 		Addr:    cfg.RunAddr,
 		Handler: controller.NewRouter(ctx, service),

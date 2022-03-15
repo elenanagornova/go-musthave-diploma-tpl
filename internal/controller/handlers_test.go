@@ -46,6 +46,7 @@ type request struct {
 }
 
 const testAddr = "http://localhost:8080/"
+const accrualAddr = "http://localhost:8081/"
 
 func TestUserRegister(t *testing.T) {
 	tests := []struct {
@@ -79,7 +80,7 @@ func TestUserRegister(t *testing.T) {
 				responseBody:       "",
 			},
 		}}
-	service := gophermart.NewGophermart(testAddr, repository.NewUserRepository(nil), repository.NewUserAccountRepository(nil), repository.NewUserOrderRepository(nil), nil)
+	service := gophermart.NewGophermart(testAddr, accrualAddr, repository.NewUserRepository(nil), repository.NewUserAccountRepository(nil), repository.NewUserOrderRepository(nil), nil)
 
 	r := NewRouter(context.Background(), service)
 	ts := httptest.NewServer(r)
