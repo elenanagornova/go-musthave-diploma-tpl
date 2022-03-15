@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	workers      = 10
+	workers      = 100
 	retryTimeout = 10 * time.Second
 )
 
