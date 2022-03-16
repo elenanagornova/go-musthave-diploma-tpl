@@ -5,6 +5,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
+	"strconv"
 )
 
 var queryAddOrder = "insert into gophermart.orders(user_uid, order_num, uploaded_at, status, accrual) values($1, $2, $3, $4, $5)"
@@ -46,7 +47,8 @@ func (u UserOrderRepository) UpdateOrdersStateFromAccrual(ctx context.Context, o
 	}
 	defer tx.Rollback(context.Background())
 	for _, value := range orders {
-		_, err = tx.Exec(ctx, queryUpdateOrderState, value.Status, value.Accrual, value.RetryCount, value.OrderID)
+		ord := strconv.Itoa(value.OrderID)
+		_, err = tx.Exec(ctx, queryUpdateOrderState, value.Status, value.Accrual, value.RetryCount, ord)
 		if err != nil {
 			return err
 		}

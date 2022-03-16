@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-musthave-diploma-tpl/internal/models"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -84,11 +83,18 @@ func (or *orderRequest) worker() {
 }
 
 func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
-	cl := http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 80 * time.Second}
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
-	resp, err := cl.Get(url)
+	//url := fmt.Sprintf("https://8c45879d-1b67-4f14-b8f5-767a09d2e2ee.mock.pstmn.io/api/orders/%s", order.OrderID)
+
+	req, _ := http.NewRequest("GET", url, nil)
+	// добавляем заголовки
+	req.Header.Add("Accept", "application/json") // добавляем заголовок Accept
+	req.Header.Add("Content-Lenght", "0")        // добавляем заголовок User-Agent
+
+	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed get %s: %w", url, err)
+		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -96,9 +102,7 @@ func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
 	}
 
 	var orderResp OrderResponse
-	b, _ := ioutil.ReadAll(resp.Body)
-	log.Println(string(b))
-	if err := json.Unmarshal(b, orderResp); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&orderResp); err != nil {
 		return nil, fmt.Errorf("failed deserialize %s: %w", url, err)
 	}
 	return &orderResp, nil
