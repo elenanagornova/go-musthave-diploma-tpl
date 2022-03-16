@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	workers      = 100
+	workers      = 1
 	retryTimeout = 1 * time.Second
 )
 
@@ -31,6 +31,7 @@ func (g Gophermart) UpdateOrders(ctx context.Context) {
 			orders := g.UserOrderRepo.GetNewAndProcessingOrders(ctx)
 			log.Println(orders)
 			if len(orders) > 0 {
+				log.Println("Updating", len(orders))
 				or := newOrderRequest(g.AccrualAddr)
 				toWriteOrders := or.run(ctx, orders)
 				g.UpdateStates(ctx, toWriteOrders)

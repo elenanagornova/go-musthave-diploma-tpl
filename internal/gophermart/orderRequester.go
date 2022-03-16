@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-musthave-diploma-tpl/internal/models"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -78,7 +79,7 @@ func (or *orderRequest) worker() {
 	}
 }
 
-func (or *orderRequest) queryOrder(order models.Order) (*orderResponse, error) {
+func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
 	resp, err := or.client.Get(url)
 	if err != nil {
@@ -89,11 +90,13 @@ func (or *orderRequest) queryOrder(order models.Order) (*orderResponse, error) {
 		return nil, fmt.Errorf("expected status 200, got %d (%s)", resp.StatusCode, resp.Status)
 	}
 
-	orderResp := new(orderResponse)
-	if err := json.NewDecoder(resp.Body).Decode(orderResp); err != nil {
+	var orderResp OrderResponse
+	b, _ := ioutil.ReadAll(resp.Body)
+	log.Println(string(b))
+	if err := json.Unmarshal(b, orderResp); err != nil {
 		return nil, fmt.Errorf("failed deserialize %s: %w", url, err)
 	}
-	return orderResp, err
+	return &orderResp, nil
 }
 
 type Result struct {
@@ -103,8 +106,8 @@ type Result struct {
 	RetryCount int
 }
 
-type orderResponse struct {
+type OrderResponse struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
-	Accrual float32 `json:"accrual"`
+	Accrual float32 `json:"accrual,omitempty"`
 }
