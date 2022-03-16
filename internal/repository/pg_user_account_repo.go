@@ -79,9 +79,7 @@ func (u UserAccountRepository) WithdrawalAmount(ctx context.Context, login strin
 	}
 	return nil
 }
-func (u UserAccountRepository) RefillAmount(ctx context.Context, userID string, diff float32) error {
-	panic("implement me")
-}
+
 func (u UserAccountRepository) UpdateBalance(ctx context.Context, order gophermart.Result) error {
 	tx, err := u.conn.Begin(ctx)
 	if err != nil {
