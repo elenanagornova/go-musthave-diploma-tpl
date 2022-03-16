@@ -37,6 +37,7 @@ func main() {
 
 	repository.UploadValuesToDB(ctx, service)
 
+	// общение с внешней системой
 	go service.UpdateOrders(ctx)
 	srv := http.Server{
 		Addr:    cfg.RunAddr,
