@@ -70,7 +70,7 @@ func (u UserAccountRepository) WithdrawalAmount(ctx context.Context, login strin
 		return err
 	}
 	defer tx.Rollback(ctx)
-	_, error := u.conn.Exec(ctx, queryUpdateByWithdrawal, user.balance-diff, user.withdrawal, user.userUID)
+	_, error := u.conn.Exec(ctx, queryUpdateByWithdrawal, user.balance-diff, user.withdrawal+diff, user.userUID)
 	if error != nil {
 		return error
 	}
