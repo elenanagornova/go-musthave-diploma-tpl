@@ -85,7 +85,6 @@ func (or *orderRequest) worker() {
 func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
 	client := &http.Client{Timeout: 80 * time.Second}
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
-	//url := fmt.Sprintf("https://8c45879d-1b67-4f14-b8f5-767a09d2e2ee.mock.pstmn.io/api/orders/%s", order.OrderID)
 
 	req, _ := http.NewRequest("GET", url, nil)
 	// добавляем заголовки
