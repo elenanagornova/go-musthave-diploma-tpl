@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-musthave-diploma-tpl/internal/models"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -32,13 +33,14 @@ func (or *orderRequest) run(ctx context.Context, orders []models.Order) []Result
 		for _, order := range orders {
 			or.tasks <- order
 		}
+		close(or.tasks)
 	}()
 	wg := sync.WaitGroup{}
 	wg.Add(workers)
 	for i := 0; i < workers; i++ {
 		go func() {
 			defer wg.Done()
-			or.worker(ctx)
+			or.worker()
 		}()
 	}
 	ret := make([]Result, 0, len(orders))
@@ -47,35 +49,32 @@ func (or *orderRequest) run(ctx context.Context, orders []models.Order) []Result
 			ret = append(ret, result)
 		}
 	}()
+	log.Println("waiting complete")
 	wg.Wait()
+	log.Println("complete")
 	return ret
 }
 
-func (or *orderRequest) worker(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case task := <-or.tasks:
-			status := task.Status
-			accrual := task.Accrual
-			resp, err := or.queryOrder(task)
-			task.RetryCount++
-			if err == nil && resp != nil {
-				status = resp.Status
-				accrual = resp.Accrual
-			}
-			oid, _ := strconv.Atoi(task.OrderID)
-
-			or.out <- Result{
-				OrderID:    oid,
-				Status:     status,
-				Accrual:    accrual,
-				RetryCount: task.RetryCount,
-			}
-
-			<-time.After(retryTimeout)
+func (or *orderRequest) worker() {
+	for task := range or.tasks {
+		status := task.Status
+		accrual := task.Accrual
+		resp, err := or.queryOrder(task)
+		task.RetryCount++
+		if err == nil && resp != nil {
+			status = resp.Status
+			accrual = resp.Accrual
 		}
+		oid, _ := strconv.Atoi(task.OrderID)
+
+		or.out <- Result{
+			OrderID:    oid,
+			Status:     status,
+			Accrual:    accrual,
+			RetryCount: task.RetryCount,
+		}
+
+		<-time.After(retryTimeout)
 	}
 }
 

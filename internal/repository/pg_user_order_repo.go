@@ -11,7 +11,7 @@ var queryAddOrder = "insert into gophermart.orders(user_uid, order_num, uploaded
 var queryGetOrder = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where order_num=$1"
 var queryGetOrdersByUserUID = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where user_uid=$1 order by uploaded_at desc"
 var queryGetAllOrders = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders order by uploaded_at desc"
-var queryGetNewAndProcessingOrders = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where status='NEW' OR status='PROCESSING'"
+var queryGetNewAndProcessingOrders = "select user_uid, order_num, uploaded_at, status, accrual  from gophermart.orders where status='NEW' OR status='new' OR status='PROCESSING'"
 var queryUpdateOrderState = "update gophermart.orders set status=$1, accrual=$2, retry_count=$3 where order_num=$4 and status!=$1"
 
 type UserOrderRepository struct {
