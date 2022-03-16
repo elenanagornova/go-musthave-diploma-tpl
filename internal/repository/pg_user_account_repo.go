@@ -5,6 +5,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go-musthave-diploma-tpl/internal/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
+	"strconv"
 )
 
 type UserAccountRepository struct {
@@ -98,7 +99,7 @@ func (u UserAccountRepository) UpdateBalance(ctx context.Context, order gopherma
 		return err
 	}
 	defer tx.Rollback(context.Background())
-	_, err = tx.Exec(ctx, queryUpdateBalance, order.Accrual, order.OrderID)
+	_, err = tx.Exec(ctx, queryUpdateBalance, order.Accrual, strconv.Itoa(order.OrderID))
 	if err != nil {
 		return err
 	}

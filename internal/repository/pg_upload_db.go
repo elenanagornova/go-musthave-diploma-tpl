@@ -13,6 +13,6 @@ func UploadValuesToDB(ctx context.Context, g *gophermart.Gophermart) {
 	account := models.NewAccount(user.UID, 23.0, 0)
 	g.UserAccountRepo.AddAccount(ctx, account)
 
-	order := models.NewOrder(user.UID, "502091324785")
+	order := models.NewOrder(user.UID, "4567890000000000")
 	g.UserOrderRepo.AddUserOrder(ctx, order)
 }
