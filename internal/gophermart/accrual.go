@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-const (
-	workers      = 1
-	retryTimeout = 1 * time.Second
-)
-
 var validStatuses = map[string]bool{
 	"INVALID": true, "PROCESSED": true,
 }

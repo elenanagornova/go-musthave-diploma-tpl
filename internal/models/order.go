@@ -17,7 +17,7 @@ type Order struct {
 	OrderID    string    `json:"number"`
 	UploadedAt time.Time `json:"uploaded_at"`
 	Status     string    `json:"status"`
-	Accrual    float32   `json:"accrual"`
+	Accrual    float64   `json:"accrual"`
 
 	// RetryCount количество попыток получить начисления во внешнем сервисе
 	RetryCount int `json:",omitempty"`

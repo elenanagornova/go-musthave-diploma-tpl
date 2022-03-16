@@ -13,6 +13,11 @@ import (
 	"time"
 )
 
+const (
+	workers      = 10
+	retryTimeout = 100 * time.Millisecond
+)
+
 type orderRequest struct {
 	tasks       chan models.Order
 	out         chan Result
@@ -24,7 +29,6 @@ func newOrderRequest(accrualAddr string) *orderRequest {
 	return &orderRequest{
 		tasks:       make(chan models.Order, workers),
 		out:         make(chan Result),
-		client:      http.Client{Timeout: 30 * time.Second},
 		accrualAddr: accrualAddr,
 	}
 }
@@ -80,8 +84,9 @@ func (or *orderRequest) worker() {
 }
 
 func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
+	cl := http.Client{Timeout: 60 * time.Second}
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
-	resp, err := or.client.Get(url)
+	resp, err := cl.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed get %s: %w", url, err)
 	}
@@ -102,12 +107,12 @@ func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
 type Result struct {
 	OrderID    int
 	Status     string
-	Accrual    float32
+	Accrual    float64
 	RetryCount int
 }
 
 type OrderResponse struct {
 	Order   string  `json:"order"`
 	Status  string  `json:"status"`
-	Accrual float32 `json:"accrual,omitempty"`
+	Accrual float64 `json:"accrual,omitempty"`
 }
