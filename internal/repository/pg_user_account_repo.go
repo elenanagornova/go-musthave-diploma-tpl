@@ -18,9 +18,8 @@ func NewUserAccountRepository(conn *pgx.Conn) *UserAccountRepository {
 
 var queryAddAccount = "insert into gophermart.account_info(user_uid, balance, withdrawal) values($1, $2, $3)"
 var queryGetBalance = "select balance, withdrawal from gophermart.account_info where user_uid=$1"
-var queryGetUserBalanceOrder = "SELECT u.user_uid, a.balance, a.withdrawal, o.order_num FROM gophermart.users u INNER JOIN  gophermart.account_info a on a.user_uid = u.user_uid JOIN gophermart.orders o on a.user_uid = o.user_uid WHERE u.login=$1 AND o.order_num=$2"
+var queryGetUserBalanceOrder = "SELECT u.user_uid, a.balance, a.withdrawal, o.order_num FROM gophermart.users u INNER JOIN  gophermart.account_info a on a.user_uid = u.user_uid JOIN gophermart.orders o on a.user_uid = o.user_uid WHERE u.login=$1"
 var queryUpdateByWithdrawal = "update gophermart.account_info set balance=$1, withdrawal=$2 where user_uid=$3"
-var queryAddWithdrawal = "insert into gophermart.withdrawals(order_num, sum, processed_at) values($1, $2, $3)"
 var queryUpdateBalance = "update gophermart.account_info set balance=($1+balance) where user_uid=(select user_uid from gophermart.orders where order_num=$2)"
 
 type UserBalanceWithOrder struct {
@@ -59,17 +58,13 @@ func (u UserAccountRepository) GetAccount(ctx context.Context, userID string) (m
 }
 func (u UserAccountRepository) WithdrawalAmount(ctx context.Context, login string, diff float32, orderNum string) error {
 	var user = UserBalanceWithOrder{}
-	result := u.conn.QueryRow(ctx, queryGetUserBalanceOrder, login, orderNum)
+	result := u.conn.QueryRow(ctx, queryGetUserBalanceOrder, login)
 	if err := result.Scan(&user.userUID, &user.balance, &user.withdrawal, &user.orderNum); err != nil {
-		if err.Error() == "no rows in result set" {
-			return gophermart.ErrOrderNotFound
-		}
 		return err
 	}
 	if user.balance < diff {
 		return gophermart.ErrNoMoney
 	}
-
 	tx, err := u.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -79,12 +74,6 @@ func (u UserAccountRepository) WithdrawalAmount(ctx context.Context, login strin
 	if error != nil {
 		return error
 	}
-	withdrawal := models.NewWithdrawal(user.orderNum, diff)
-	_, withdrawErr := u.conn.Exec(ctx, queryAddWithdrawal, withdrawal.OrderNum, withdrawal.Sum, withdrawal.ProcessedAt)
-	if withdrawErr != nil {
-		return withdrawErr
-	}
-
 	if err = tx.Commit(ctx); err != nil {
 		return err
 	}

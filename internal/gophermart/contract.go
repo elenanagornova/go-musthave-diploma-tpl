@@ -29,4 +29,5 @@ type UserOrderRepo interface {
 
 type WithdrawalRepo interface {
 	GetWithdrawals(ctx context.Context) []models.Withdrawal
+	AddWithdraw(ctx context.Context, withdrawal models.Withdrawal) error
 }

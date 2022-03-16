@@ -107,6 +107,10 @@ func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.G
 }
 
 func (g Gophermart) WithDrawUserBalance(ctx context.Context, login string, withdrawRequest Openapi.UserBalanceWithdrawRequest) error {
+	newWithdrawal := models.NewWithdrawal(withdrawRequest.Order, withdrawRequest.Sum)
+	if err := g.WithdrawalRepo.AddWithdraw(ctx, newWithdrawal); err != nil {
+		return err
+	}
 	return g.UserAccountRepo.WithdrawalAmount(ctx, login, withdrawRequest.Sum, withdrawRequest.Order)
 }
 
