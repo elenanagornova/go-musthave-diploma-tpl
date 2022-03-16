@@ -9,6 +9,7 @@ import (
 	Openapi "go-musthave-diploma-tpl/gen/gophermart"
 	"go-musthave-diploma-tpl/internal/models"
 	"go-musthave-diploma-tpl/internal/pkg/hasher"
+	"log"
 	"time"
 )
 
@@ -114,7 +115,9 @@ func (g Gophermart) GetWithdrawals(ctx context.Context) []models.Withdrawal {
 }
 
 func (g Gophermart) UpdateStates(ctx context.Context, orders []Result) {
-	g.UserOrderRepo.UpdateOrdersStateFromAccrual(ctx, orders)
+	if err := g.UserOrderRepo.UpdateOrdersStateFromAccrual(ctx, orders); err != nil {
+		log.Println(err)
+	}
 	for _, order := range orders {
 		if order.Status == "PROCESSED" {
 			g.UserAccountRepo.UpdateBalance(ctx, order)
