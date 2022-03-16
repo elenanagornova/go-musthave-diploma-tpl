@@ -24,7 +24,6 @@ func (g Gophermart) UpdateOrders(ctx context.Context) {
 			return
 		case <-time.After(1 * time.Second):
 			orders := g.UserOrderRepo.GetNewAndProcessingOrders(ctx)
-			log.Println(orders)
 			if len(orders) > 0 {
 				log.Println("Updating", len(orders))
 				or := newOrderRequest(g.AccrualAddr)
