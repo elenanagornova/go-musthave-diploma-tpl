@@ -95,6 +95,3 @@ func (u UserAccountRepository) UpdateBalance(ctx context.Context, order gopherma
 	}
 	return nil
 }
-func (u UserAccountRepository) Close() error {
-	panic("implement me")
-}

@@ -8,7 +8,6 @@ import (
 	"go.uber.org/ratelimit"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 var ErrWrongStatusCode = errors.New("wrong http status code")
@@ -88,9 +87,4 @@ func (c Client) getAccrual(ctx context.Context, orderID string) *GetAccrualRespo
 		Msg("get accrual result")
 
 	return &GetAccrualResponse{Accrual: resp.JSON200.Accrual, Status: resp.JSON200.Status}
-}
-
-func NewProvider(accrualAPIClient Accrual.ClientWithResponsesInterface) *Client {
-	rl := ratelimit.New(1000, ratelimit.Per(1*time.Minute)) // per second
-	return &Client{accrualAPIClient: accrualAPIClient, rateLimiter: rl}
 }

@@ -87,9 +87,8 @@ func (or *orderRequest) queryOrder(order models.Order) (*OrderResponse, error) {
 	url := fmt.Sprintf("%s/api/orders/%s", or.accrualAddr, order.OrderID)
 
 	req, _ := http.NewRequest("GET", url, nil)
-	// добавляем заголовки
-	req.Header.Add("Accept", "application/json") // добавляем заголовок Accept
-	req.Header.Add("Content-Lenght", "0")        // добавляем заголовок User-Agent
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Lenght", "0")
 
 	resp, err := client.Do(req)
 	if err != nil {

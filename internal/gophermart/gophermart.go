@@ -50,9 +50,6 @@ func (g Gophermart) RegisterUser(context context.Context, login string, password
 func (g Gophermart) LoginUser(ctx context.Context, login string, password string) error {
 	user, err := g.UserRepo.GetUser(ctx, login)
 	if err != nil {
-		if err == ErrUserNotFound {
-			return ErrUserNotFound
-		}
 		return err
 	}
 
@@ -91,7 +88,6 @@ func (g Gophermart) GetUserOrders(ctx context.Context, login string) []models.Or
 	}
 	println(user.UID)
 	return g.UserOrderRepo.GetUserOrders(ctx, user.UID)
-	//return g.UserOrderRepo.GetAllUserOrders(ctx)
 }
 
 func (g Gophermart) GetUserBalance(ctx context.Context, login string) (Openapi.GetUserBalanceResponse, error) {

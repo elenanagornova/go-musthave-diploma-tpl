@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"go-musthave-diploma-tpl/internal/pkg/auth"
 	"net/http"
@@ -17,7 +18,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 		if !strings.Contains(r.URL.Path, "register") && !strings.Contains(r.URL.Path, "login") {
 			c, err := r.Cookie("token")
 			if err != nil {
-				if err == http.ErrNoCookie {
+				if errors.Is(err, http.ErrNoCookie) {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
@@ -27,7 +28,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			tknStr := c.Value
 			userLogin, err := auth.CheckToken(tknStr)
 			if err != nil {
-				if err == jwt.ErrSignatureInvalid {
+				if errors.Is(err, jwt.ErrSignatureInvalid) {
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
