@@ -23,7 +23,7 @@ func LoadServerConfiguration() *ServerConfiguration {
 	}
 
 	if cfg.DatabaseDSN = os.Getenv("DATABASE_URI"); cfg.DatabaseDSN == "" {
-		flag.StringVar(&cfg.DatabaseDSN, "d", "", "")
+		flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://shorteneruser:pgpwd4@localhost:5432/gophermartdb?sslmode=disable", "")
 	}
 
 	flag.Parse()
